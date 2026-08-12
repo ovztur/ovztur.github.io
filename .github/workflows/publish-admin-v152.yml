@@ -20,17 +20,21 @@ jobs:
       - name: Apply admin role patch
         run: python .github/scripts/app-admin-v152.py
 
-      - name: Validate JavaScript
+      - name: Validate JavaScript blocks
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           s=Path('app/index.html').read_text(encoding='utf-8')
-          a=s.find('<script>')+8
-          b=s.rfind('</script>')
-          Path('/tmp/app.js').write_text(s[a:b],encoding='utf-8')
+          blocks=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          if not blocks:
+              raise SystemExit('No script blocks found')
+          for i,b in enumerate(blocks):
+              Path(f'/tmp/app_{i}.js').write_text(b,encoding='utf-8')
+          print(len(blocks))
           PY
-          node --check /tmp/app.js
+          for f in /tmp/app_*.js; do node --check "$f"; done
 
       - name: Publish v1.5.2 content
         shell: bash
