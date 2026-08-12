@@ -1,0 +1,1 @@
+Proven app/index.html blob from commit 52e93399283fb9f47322a6c97fd12fc18dca501f will be restored as the stable v1.6.4 app body.
