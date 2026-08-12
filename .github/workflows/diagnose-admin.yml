@@ -1,0 +1,38 @@
+name: Diagnose MCU Admin Code
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/diagnose-admin.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Inspect pre-central admin code
+        shell: bash
+        run: |
+          git show 52e93399283fb9f47322a6c97fd12fc18dca501f:app/index.html > /tmp/precentral.html
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/precentral.html').read_text(encoding='utf-8')
+          needles=['PRIMARY_ADMIN','isSuperAdmin','isAdmin','adminMenuBtn','Admin Paneli','updateAccountUI','renderAdminPanel','isPrimaryAdmin','ovztur']
+          for n in needles:
+              print('\n###',n)
+              start=0
+              found=0
+              while True:
+                  i=s.find(n,start)
+                  if i<0 or found>=8: break
+                  a=max(0,i-260); b=min(len(s),i+520)
+                  print(s[a:b].replace('\n','\\n'))
+                  print('---')
+                  start=i+len(n); found+=1
+PY
