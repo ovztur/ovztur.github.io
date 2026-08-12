@@ -1,1 +1,0 @@
-The legacy publisher is disabled. Stable admin release will be kept from rollback.
