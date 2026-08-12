@@ -1,0 +1,37 @@
+name: Build MCU Tracker v1.5.2 Internet Admin Updater
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'updater-v152/main.go'
+      - '.github/workflows/build-updater-v152.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - name: Build Windows x64 updater
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: '0'
+        run: |
+          mkdir -p downloads
+          go build -ldflags='-s -w -H=windowsgui' -o downloads/MCU_Tracker_Update_v1.5.2_Internet_Admin.exe ./updater-v152/main.go
+          sha256sum downloads/MCU_Tracker_Update_v1.5.2_Internet_Admin.exe > downloads/MCU_Tracker_Update_v1.5.2_Internet_Admin.sha256
+      - name: Publish updater
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add downloads/MCU_Tracker_Update_v1.5.2_Internet_Admin.exe downloads/MCU_Tracker_Update_v1.5.2_Internet_Admin.sha256
+          git diff --cached --quiet && exit 0
+          git commit -m 'Build MCU Tracker v1.5.2 internet admin updater'
+          git push
