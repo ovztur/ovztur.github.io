@@ -1,6 +1,6 @@
 {
-  "version": "1.6.2",
+  "version": "1.6.3",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "2aa25228e8dd4b9e26b73fda8b6edaa3005981378e071364c93543a90e18866f",
-  "notes": "Admin düzeltmesi: yerel hesap sistemi geri yüklendi; ovztur kalıcı Ana Admin; Admin Paneli geri geldi; canlı anonim sayaçlar uygulama içinde kaldı."
+  "sha256": "b4585aed0ee793f281d2b0f30be2a2468cae58f7a90d414f76a7607794606386",
+  "notes": "Admin restore: ovztur kalıcı Ana Admin, Admin Paneli geri yüklendi, canlı anonim sayaçlar uygulama içinde."
 }
