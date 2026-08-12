@@ -1,9 +1,10 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.6-lite';
+  const VERSION='1.6.7-lite';
   const CONFIG_URL='https://ovztur.github.io/config/analytics.json';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
+  const USER_STATE_PREFIX='MCU_TRACKER_USER_STATE_V1_';
   let cfg={enabled:false,event_url:'',stats_url:''};
   const once=new Set();
   let paintQueued=false;
@@ -49,7 +50,16 @@
   function schedulePaint(){if(paintQueued)return;paintQueued=true;requestAnimationFrame(paintRoleUI)}
 
   function roleRows(users,current){
-    return Object.entries(users).sort(([,a],[,b])=>{const ap=primary(a),bp=primary(b);if(ap!==bp)return ap?-1:1;return String(a.username||'').localeCompare(String(b.username||''),'tr')}).map(([storedKey,u])=>{const p=primary(u),a=admin(u);return `<div class="panel" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><b>${esc(u.displayName||u.username||storedKey)}</b> <span class="meta">@${esc(u.username||storedKey)}</span><div style="margin-top:6px"><span class="role-badge ${a?'admin':''}">${p?'🛡️ Ana Admin':a?'👑 Admin':'👤 Kullanıcı'}</span></div></div><div>${p?'<button class="secondary" disabled>Kalıcı Ana Admin</button>':primary(current)?`<button data-admin-key="${esc(storedKey)}" data-admin-action="${a?'remove':'grant'}" class="${a?'secondary':''}">${a?'Adminliği Kaldır':'Admin Yap'}</button>`:'<span class="meta">Yetki yönetimi yalnızca ovztur hesabında.</span>'}</div></div>`}).join('')
+    return Object.entries(users).sort(([,a],[,b])=>{const ap=primary(a),bp=primary(b);if(ap!==bp)return ap?-1:1;return String(a.username||'').localeCompare(String(b.username||''),'tr')}).map(([storedKey,u])=>{
+      const p=primary(u),a=admin(u);
+      const controls=p?'<button class="secondary" disabled>Kalıcı Ana Admin</button>':primary(current)?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button data-admin-key="${esc(storedKey)}" data-admin-action="${a?'remove':'grant'}" class="${a?'secondary':''}">${a?'Adminliği Kaldır':'Admin Yap'}</button><button data-delete-key="${esc(storedKey)}" class="secondary">🗑️ Hesabı Sil</button></div>`:'<span class="meta">Yetki yönetimi yalnızca ovztur hesabında.</span>';
+      return `<div class="panel" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><b>${esc(u.displayName||u.username||storedKey)}</b> <span class="meta">@${esc(u.username||storedKey)}</span><div style="margin-top:6px"><span class="role-badge ${a?'admin':''}">${p?'🛡️ Ana Admin':a?'👑 Admin':'👤 Kullanıcı'}</span></div></div><div>${controls}</div></div>`;
+    }).join('')
+  }
+
+  function findByNick(users,nick){
+    const wanted=keyOf(nick);if(!wanted)return null;
+    return Object.entries(users).find(([storedKey,u])=>keyOf(u?.username||u?.key||storedKey)===wanted)||null;
   }
 
   function grantByNick(nick){
@@ -57,12 +67,31 @@
     if(!current||!primary(current))return{ok:false,msg:'Bu işlem yalnızca ovztur Ana Admin hesabından yapılabilir.'};
     const wanted=keyOf(nick);if(!wanted)return{ok:false,msg:'Bir kullanıcı nicki gir.'};
     if(wanted==='ovztur')return{ok:false,msg:'ovztur zaten kalıcı Ana Admin.'};
-    const found=Object.entries(users).find(([storedKey,u])=>keyOf(u?.username||u?.key||storedKey)===wanted);
-    if(!found)return{ok:false,msg:'Bu nick ile kayıtlı hesap bu cihazda bulunamadı.'};
+    const found=findByNick(users,wanted);if(!found)return{ok:false,msg:'Bu nick ile kayıtlı hesap bu cihazda bulunamadı.'};
     const [storedKey,target]=found;
     if(target.role==='admin')return{ok:true,msg:`@${target.username||storedKey} zaten Admin.`};
     target.role='admin';target.isPrimaryAdmin=false;users[storedKey]=target;writeUsers(users);
     return{ok:true,msg:`@${target.username||storedKey} Admin yapıldı.`};
+  }
+
+  function deleteAccountByKey(storedKey){
+    const {users,user}=account(),current=normalizePrimary()||user;
+    if(!current||!primary(current))return{ok:false,msg:'Hesap silme yalnızca ovztur Ana Admin hesabından yapılabilir.'};
+    const target=users[storedKey];if(!target)return{ok:false,msg:'Hesap bulunamadı.'};
+    if(primary(target)||keyOf(storedKey)==='ovztur')return{ok:false,msg:'ovztur Ana Admin hesabı silinemez.'};
+    const label=target.username||storedKey;
+    delete users[storedKey];writeUsers(users);
+    try{localStorage.removeItem(USER_STATE_PREFIX+encodeURIComponent(storedKey))}catch{}
+    return{ok:true,msg:`@${label} hesabı ve yerel profil verileri silindi.`};
+  }
+
+  function deleteByNick(nick){
+    const {users,user}=account(),current=normalizePrimary()||user;
+    if(!current||!primary(current))return{ok:false,msg:'Hesap silme yalnızca ovztur Ana Admin hesabından yapılabilir.'};
+    const wanted=keyOf(nick);if(!wanted)return{ok:false,msg:'Silmek için bir kullanıcı nicki gir.'};
+    if(wanted==='ovztur')return{ok:false,msg:'ovztur Ana Admin hesabı silinemez.'};
+    const found=findByNick(users,wanted);if(!found)return{ok:false,msg:'Bu nick ile kayıtlı hesap bu cihazda bulunamadı.'};
+    return deleteAccountByKey(found[0]);
   }
 
   async function renderAdmin(message=''){
@@ -70,15 +99,18 @@
     const subtitle=document.getElementById('subtitle');if(subtitle)subtitle.textContent='ADMIN MERKEZİ';
     document.querySelectorAll('.menu-category').forEach(b=>b.classList.toggle('active',b.id==='adminMenuBtn'));
     const host=document.getElementById('movieList');if(!host)return;
-    const list=Object.values(users),admins=list.filter(admin),nickBox=primary(current)?`<section class="panel"><h3 style="margin-top:0">👑 Nick ile Admin Yap</h3><p class="meta">Admin yapmak istediğin kayıtlı hesabın kullanıcı adını yaz.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="mcuAdminNick" class="search" style="flex:1;min-width:220px" placeholder="Kullanıcı nicki / örn. peter"><button id="mcuGrantNickBtn">Admin Yap</button></div><div id="mcuAdminNickStatus" class="meta" style="margin-top:8px">${esc(message)}</div></section>`:'';
-    host.innerHTML=`<section class="profile-hero" style="grid-template-columns:72px 1fr"><div class="profile-avatar">🛡️</div><div><div class="profile-name">Admin Merkezi</div><div class="profile-rank">${primary(current)?'Ana Admin • ovztur':'Yetkili Admin'}</div><p class="meta" style="margin:8px 0 0">Bu cihazdaki hesap: ${list.length} • Admin: ${admins.length} • Ana Admin: 1</p></div></section>${nickBox}<section class="panel"><h3 style="margin-top:0">🌐 Canlı Kullanım</h3><p class="meta">Yalnızca toplu anonim sayaçlar tutulur.</p><div class="metric-grid" id="mcuStats"><div class="metric-card"><b>…</b><small>Uygulama açılışı</small></div><div class="metric-card"><b>…</b><small>Giriş</small></div><div class="metric-card"><b>…</b><small>Çıkış</small></div><div class="metric-card"><b>…</b><small>Kayıt</small></div></div><div class="meta" id="mcuStatsStatus">Sunucu verisi alınıyor…</div></section><section class="panel"><h3 style="margin-top:0">Yetki Sistemi</h3><p><b>ovztur</b> kalıcı Ana Admin hesabıdır.</p><p class="meta">Admin yaptığın hesaplar Admin Paneli sekmesini görür. Admin verme/kaldırma yetkisi yalnızca ovztur hesabındadır.</p></section>${roleRows(users,current)}<section class="panel"><h3 style="margin-top:0">🔒 Gizlilik</h3><p class="meta">Şifreler, izleme geçmişi, notlar ve kişisel puanlar bu panelde gösterilmez.</p></section>`;
+    const list=Object.values(users),admins=list.filter(admin),nickBox=primary(current)?`<section class="panel"><h3 style="margin-top:0">👑 Nick ile Hesap Yönetimi</h3><p class="meta">Kayıtlı hesabın nickini yaz. Buradan doğrudan Admin yapabilir veya hesabı silebilirsin.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="mcuAdminNick" class="search" style="flex:1;min-width:220px" placeholder="Kullanıcı nicki / örn. peter"><button id="mcuGrantNickBtn">Admin Yap</button><button id="mcuDeleteNickBtn" class="secondary">🗑️ Hesabı Sil</button></div><div id="mcuAdminNickStatus" class="meta" style="margin-top:8px">${esc(message)}</div></section>`:'';
+    host.innerHTML=`<section class="profile-hero" style="grid-template-columns:72px 1fr"><div class="profile-avatar">🛡️</div><div><div class="profile-name">Admin Merkezi</div><div class="profile-rank">${primary(current)?'Ana Admin • ovztur':'Yetkili Admin'}</div><p class="meta" style="margin:8px 0 0">Bu cihazdaki hesap: ${list.length} • Admin: ${admins.length} • Ana Admin: 1</p></div></section>${nickBox}<section class="panel"><h3 style="margin-top:0">🌐 Canlı Kullanım</h3><p class="meta">Yalnızca toplu anonim sayaçlar tutulur.</p><div class="metric-grid" id="mcuStats"><div class="metric-card"><b>…</b><small>Uygulama açılışı</small></div><div class="metric-card"><b>…</b><small>Giriş</small></div><div class="metric-card"><b>…</b><small>Çıkış</small></div><div class="metric-card"><b>…</b><small>Kayıt</small></div></div><div class="meta" id="mcuStatsStatus">Sunucu verisi alınıyor…</div></section><section class="panel"><h3 style="margin-top:0">Yetki Sistemi</h3><p><b>ovztur</b> kalıcı Ana Admin hesabıdır ve silinemez.</p><p class="meta">Admin verme, kaldırma ve hesap silme yetkisi yalnızca ovztur hesabındadır.</p></section>${roleRows(users,current)}<section class="panel"><h3 style="margin-top:0">🔒 Gizlilik</h3><p class="meta">Şifreler, izleme geçmişi, notlar ve kişisel puanlar panelde gösterilmez. Hesap silindiğinde o hesaba ait yerel profil verileri de kaldırılır.</p></section>`;
     document.getElementById('loadMore')?.classList.add('hidden');
 
-    const nickInput=document.getElementById('mcuAdminNick'),grantBtn=document.getElementById('mcuGrantNickBtn');
+    const nickInput=document.getElementById('mcuAdminNick'),grantBtn=document.getElementById('mcuGrantNickBtn'),deleteBtn=document.getElementById('mcuDeleteNickBtn');
     const doGrant=()=>{if(!nickInput)return;const r=grantByNick(nickInput.value);renderAdmin(r.msg)};
-    if(grantBtn)grantBtn.onclick=doGrant;if(nickInput)nickInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doGrant()}});
+    const doDelete=()=>{if(!nickInput)return;const nick=nickInput.value.trim();if(!nick)return renderAdmin('Silmek için bir kullanıcı nicki gir.');if(!confirm(`@${nick} hesabı silinsin mi?\n\nBu hesabın yerel ilerleme, XP, kupa, favori, not ve puan verileri de silinecek.`))return;if(!confirm(`SON ONAY: @${nick} hesabını kalıcı olarak silmek istediğine emin misin?`))return;const r=deleteByNick(nick);renderAdmin(r.msg)};
+    if(grantBtn)grantBtn.onclick=doGrant;if(deleteBtn)deleteBtn.onclick=doDelete;if(nickInput)nickInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doGrant()}});
 
     document.querySelectorAll('[data-admin-action]').forEach(btn=>btn.onclick=()=>{if(!primary(current))return;const all=readUsers(),k=btn.dataset.adminKey,target=all[k];if(!target||primary(target))return;const make=btn.dataset.adminAction==='grant';if(!confirm(`${target.username||k} hesabı ${make?'Admin yapılsın mı?':'normal kullanıcıya çevrilsin mi?'}`))return;target.role=make?'admin':'user';target.isPrimaryAdmin=false;all[k]=target;writeUsers(all);renderAdmin(`@${target.username||k} ${make?'Admin yapıldı.':'normal kullanıcı yapıldı.'}`)});
+
+    document.querySelectorAll('[data-delete-key]').forEach(btn=>btn.onclick=()=>{if(!primary(current))return;const all=readUsers(),k=btn.dataset.deleteKey,target=all[k];if(!target||primary(target))return;const label=target.username||k;if(!confirm(`@${label} hesabı silinsin mi?\n\nBu hesaba ait yerel profil verileri de silinecek.`))return;if(!confirm(`SON ONAY: @${label} hesabını kalıcı olarak silmek istediğine emin misin?`))return;const r=deleteAccountByKey(k);renderAdmin(r.msg)});
 
     const j=await stats(),grid=document.getElementById('mcuStats'),status=document.getElementById('mcuStatsStatus');if(!grid)return;
     if(!j?.ok){grid.innerHTML='<div class="metric-card"><b>—</b><small>Bağlantı yok</small></div>';if(status)status.textContent='Canlı sayaç servisine ulaşılamadı.';return}
