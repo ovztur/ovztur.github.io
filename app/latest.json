@@ -1,6 +1,6 @@
 {
-  "version": "1.5.1",
+  "version": "1.6.1",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "3b84a9f861894817f084abb3d7a18d6b7f5efaddae28c5eca1e5c19aea77bbf1",
-  "notes": "MCU Tracker uygulama içeriği + privacy-first anonim olay adaptörü. Hesap ve ilerleme verileri cihazda kalır."
+  "sha256": "b4f0af66ed5096a14f50bce46fdbc9572d5a912b15405d4c5bc7b2ec7741340c",
+  "notes": "Uygulama içindeki merkezi Admin Paneline canlı anonim giriş/çıkış/kayıt/açılış sayaçları bağlandı. EXE güncellemesi gerekmez."
 }
