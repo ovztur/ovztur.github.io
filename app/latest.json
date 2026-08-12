@@ -1,6 +1,6 @@
 {
-  "version": "1.6.10",
+  "version": "1.6.11",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "6842e89b8392264386ad1e1fd6244660ae69aa7e8fe9f4e3a7cb2138f16a7425",
-  "notes": "Nick ile Admin Yap kutusunda yalnız Admin Yap bırakıldı. Nick ile Hesap Sil ayrı kutu olarak tutuldu."
+  "sha256": "8d8053981825482075e1f2607474f646db7589292e83c3b0c0f5c8253add220b",
+  "notes": "Hesap silme kontrollerindeki tekrar kaldırıldı; her hesap için tek Hesabı Sil düğmesi bırakıldı."
 }
