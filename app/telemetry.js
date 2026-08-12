@@ -1,11 +1,12 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.4-rescue';
+  const VERSION='1.6.5-lite';
   const CONFIG_URL='https://ovztur.github.io/config/analytics.json';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
   let cfg={enabled:false,event_url:'',stats_url:''};
   const once=new Set();
+  let paintQueued=false;
 
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const keyOf=v=>String(v||'').trim().toLocaleLowerCase('tr-TR');
@@ -24,6 +25,8 @@
   function normalizePrimary(){
     const {users,key,user}=account();
     if(!user||!primary(user))return user;
+    const needsFix=key!=='ovztur'||user.key!=='ovztur'||user.username!=='ovztur'||user.role!=='admin'||user.isPrimaryAdmin!==true;
+    if(!needsFix)return user;
     const fixed={...user,key:'ovztur',username:'ovztur',role:'admin',isPrimaryAdmin:true};
     if(key!=='ovztur'){delete users[key];users.ovztur=fixed;localStorage.setItem(SESSION_KEY,'ovztur')}else users[key]=fixed;
     writeUsers(users);
@@ -41,7 +44,7 @@
         btn.dataset.cat='admin';
         btn.textContent='🛡️ Admin Paneli';
         const anchor=side.querySelector('.category-info')||side.querySelector('#logoutBtn');
-        if(anchor) side.insertBefore(btn,anchor); else side.appendChild(btn);
+        if(anchor)side.insertBefore(btn,anchor);else side.appendChild(btn);
       }
     }
     if(btn){
@@ -55,18 +58,18 @@
   }
 
   function paintRoleUI(){
+    paintQueued=false;
     const u=normalizePrimary()||account().user;
     if(!u)return;
     const isPrimary=primary(u),isAdmin=admin(u);
     const box=document.getElementById('menuAccount');
-    if(box){
-      const badge=box.querySelector('.role-badge');
-      if(badge){badge.classList.toggle('admin',isAdmin);badge.textContent=isPrimary?'🛡️ Ana Admin':isAdmin?'👑 Admin':'👤 Kullanıcı'}
-    }
+    if(box){const badge=box.querySelector('.role-badge');if(badge){badge.classList.toggle('admin',isAdmin);const wanted=isPrimary?'🛡️ Ana Admin':isAdmin?'👑 Admin':'👤 Kullanıcı';if(badge.textContent!==wanted)badge.textContent=wanted}}
     const profileBadge=document.querySelector('.profile-hero .role-badge');
-    if(profileBadge&&isPrimary){profileBadge.classList.add('admin');profileBadge.textContent='🛡️ Ana Admin Hesabı'}
+    if(profileBadge&&isPrimary){profileBadge.classList.add('admin');if(profileBadge.textContent!=='🛡️ Ana Admin Hesabı')profileBadge.textContent='🛡️ Ana Admin Hesabı'}
     ensureAdminButton(isAdmin);
   }
+
+  function schedulePaint(){if(paintQueued)return;paintQueued=true;requestAnimationFrame(paintRoleUI)}
 
   function roleRows(users,current){
     const list=Object.values(users).sort((a,b)=>{const ap=primary(a),bp=primary(b);if(ap!==bp)return ap?-1:1;return String(a.username||'').localeCompare(String(b.username||''),'tr')});
@@ -96,17 +99,17 @@
     if(!j?.ok){grid.innerHTML='<div class="metric-card"><b>—</b><small>Bağlantı yok</small></div>';if(status)status.textContent='Canlı sayaç servisine ulaşılamadı.';return}
     const t=j.totals||{},fmt=v=>Number(v||0).toLocaleString('tr-TR');
     grid.innerHTML=`<div class="metric-card"><b>${fmt(t.app_open)}</b><small>Uygulama açılışı</small></div><div class="metric-card"><b>${fmt(t.login)}</b><small>Giriş</small></div><div class="metric-card"><b>${fmt(t.logout)}</b><small>Çıkış</small></div><div class="metric-card"><b>${fmt(t.register)}</b><small>Kayıt</small></div>`;
-    if(status)status.textContent='Canlı • kurtarma katmanı '+VERSION+' • anonim toplu sayaçlar';
+    if(status)status.textContent='Canlı • hafif kurtarma katmanı '+VERSION+' • anonim toplu sayaçlar';
   }
 
   function wrap(name,make){try{const orig=window[name];if(typeof orig!=='function'||orig.__mcuRescueWrapped)return;const w=make(orig);w.__mcuRescueWrapped=true;window[name]=w}catch{}}
   function install(){
-    normalizePrimary();paintRoleUI();sendOnce('app_open','app_open');
-    wrap('loginUser',orig=>async function(key){const before=readUsers()[key];const fresh=!!before?.createdAt&&(Date.now()-Number(before.createdAt)<15000);const out=await orig.apply(this,arguments);paintRoleUI();send(fresh?'register':'login');return out});
+    normalizePrimary();schedulePaint();sendOnce('app_open','app_open');
+    wrap('loginUser',orig=>async function(key){const before=readUsers()[key];const fresh=!!before?.createdAt&&(Date.now()-Number(before.createdAt)<15000);const out=await orig.apply(this,arguments);schedulePaint();send(fresh?'register':'login');return out});
     wrap('logout',orig=>function(){send('logout');return orig.apply(this,arguments)});
-    const observer=new MutationObserver(()=>paintRoleUI());
-    observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
-    setInterval(paintRoleUI,750);
+    document.getElementById('hamburgerButton')?.addEventListener('click',()=>setTimeout(schedulePaint,0));
+    document.getElementById('sideMenu')?.addEventListener('click',()=>setTimeout(schedulePaint,0));
+    window.addEventListener('focus',schedulePaint,{passive:true});
   }
 
   loadConfig().finally(()=>{if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0)});
