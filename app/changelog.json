@@ -1,6 +1,16 @@
 {
-  "latest": "1.6.15",
+  "latest": "1.6.16",
   "entries": [
+    {
+      "version": "1.6.16",
+      "date": "2026-08-13",
+      "title": "IMDb Uygulama İçi Görünüm",
+      "items": [
+        "Film detayındaki IMDb puanı ve oy sayısı uygulama içinde gösterilmeye devam eder.",
+        "Kullanıcıyı dışarı yönlendiren IMDb Sayfası butonu kaldırıldı.",
+        "IMDb puan sıralaması MCU Tracker içinde kullanılmaya devam eder."
+      ]
+    },
     {
       "version": "1.6.15",
       "date": "2026-08-12",
