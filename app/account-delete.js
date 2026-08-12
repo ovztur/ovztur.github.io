@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.14';
+  const VERSION='1.6.16';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
   const STATE_PREFIX='MCU_TRACKER_USER_STATE_V1_';

@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.13-lite';
+  const VERSION='1.6.16-lite';
   const CONFIG_URL='https://ovztur.github.io/config/analytics.json';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
