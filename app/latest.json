@@ -1,6 +1,6 @@
 {
-  "version": "1.6.8",
+  "version": "1.6.9",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "7004c4ab11c7477e01a35ec226872c51a926e5dcdd81930a353f4f506206981b",
-  "notes": "Hesap silme görünürlük düzeltmesi: silme kontrolleri Admin Panelinin kendi gövdesine entegre edildi ve script önbelleği yenilendi."
+  "sha256": "c36cab52ef9e7e5991412671f9140cff39d971b2a0ed4d116ed89d9ab9896bae",
+  "notes": "Nick ile Admin Yap ve Nick ile Hesap Sil araçları Admin Panelinde iki ayrı kutuya ayrıldı."
 }
