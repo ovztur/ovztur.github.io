@@ -1,6 +1,6 @@
 {
-  "version": "1.6.12",
+  "version": "1.6.13",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "4795e5d7e2dc546ae693d2e80398d87a12537ac0cf3ceb345737e5ea938e6eb5",
-  "notes": "Hesap silme arayüzü tekilleştirildi: Ana Admin için yalnızca tek Nick ile Hesap Sil kutusu kaldı; hesap satırlarındaki ek silme düğmeleri kaldırıldı."
+  "sha256": "72c647018669c76944ad3f19f29d1f0dd5da6e98dd4926d800ed5aff31a4e286",
+  "notes": "Eski admin-nick-split modülü kaldırıldı. Ana Admin panelinde yalnızca tek Nick ile Hesap Sil kutusu kalır."
 }
