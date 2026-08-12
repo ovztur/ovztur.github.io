@@ -1,6 +1,6 @@
 {
-  "version": "1.6.0",
-  "url": "https://ovztur.github.io/app/index.html",
-  "sha256": "8a2fc58f5822bf43a00c83d1b10f6b00523a770beda0f05a8a5bb9a09bb2079b",
-  "notes": "Web/Central Auth: merkezi giriş, merkezi admin rolleri ve ovztur kalıcı Super Admin."
+  "version": "1.5.1",
+  "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
+  "sha256": "3b84a9f861894817f084abb3d7a18d6b7f5efaddae28c5eca1e5c19aea77bbf1",
+  "notes": "MCU Tracker uygulama içeriği + privacy-first anonim olay adaptörü. Hesap ve ilerleme verileri cihazda kalır."
 }
