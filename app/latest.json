@@ -1,6 +1,6 @@
 {
-  "version": "1.5.3",
-  "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "9d3b2c80135e5b250888ea8a29b113b3437efd317798e3f0dd2aa3d74f0c0c60",
-  "notes": "Admin Paneli içine canlı anonim giriş/çıkış/kayıt/açılış sayaçları bağlandı. Yeni EXE gerekmez."
+  "version": "1.6.0",
+  "url": "https://ovztur.github.io/app/index.html",
+  "sha256": "b703a79c5f0695e41f87b5fc1c93b06a62790e2e30b7affc15aee3a736ce1797",
+  "notes": "Web/Central Auth: merkezi giriş, merkezi admin rolleri ve ovztur kalıcı Super Admin."
 }
