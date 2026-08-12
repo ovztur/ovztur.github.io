@@ -20,6 +20,17 @@ jobs:
       - name: Apply admin role patch
         run: python .github/scripts/app-admin-v152.py
 
+      - name: Force raw GitHub content URL
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app/latest.json')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('https://ovztur.github.io/app/index.html','https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html')
+          p.write_text(s,encoding='utf-8')
+          PY
+
       - name: Validate JavaScript blocks
         shell: bash
         run: |
