@@ -1,6 +1,6 @@
 {
-  "version": "1.5.1",
+  "version": "1.6.2",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "3b84a9f861894817f084abb3d7a18d6b7f5efaddae28c5eca1e5c19aea77bbf1",
-  "notes": "MCU Tracker uygulama içeriği + privacy-first anonim olay adaptörü. Hesap ve ilerleme verileri cihazda kalır."
+  "sha256": "2aa25228e8dd4b9e26b73fda8b6edaa3005981378e071364c93543a90e18866f",
+  "notes": "Admin düzeltmesi: yerel hesap sistemi geri yüklendi; ovztur kalıcı Ana Admin; Admin Paneli geri geldi; canlı anonim sayaçlar uygulama içinde kaldı."
 }
