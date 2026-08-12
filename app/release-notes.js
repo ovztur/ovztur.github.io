@@ -1,12 +1,13 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.14';
+  const VERSION='1.6.15';
   const CHANGELOG_URL='https://ovztur.github.io/app/changelog.json';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
   const SEEN_KEY='MCU_TRACKER_CHANGELOG_SEEN_VERSION';
   let cached=null;
 
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const publicText=v=>String(v??'').replace(/\bovztur\b/gi,'Ana Admin');
+  const esc=v=>publicText(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   async function loadNotes(){
     if(cached)return cached;
