@@ -1,0 +1,64 @@
+name: Publish MCU Tracker App v1.5.3
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/app-v153-telemetry.py'
+      - '.github/workflows/publish-app-v153.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch live app content
+        run: python .github/scripts/app-v153-telemetry.py
+
+      - name: Validate JavaScript blocks
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, sys
+          s=Path('app/index.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          for i,b in enumerate(blocks):
+              if not b.strip():
+                  continue
+              p=Path(f'/tmp/mcu-script-{i}.js')
+              p.write_text(b,encoding='utf-8')
+              r=subprocess.run(['node','--check',str(p)],capture_output=True,text=True)
+              if r.returncode:
+                  print(r.stderr)
+                  sys.exit(r.returncode)
+          PY
+
+      - name: Generate v1.5.3 manifest
+        shell: bash
+        run: |
+          SHA=$(sha256sum app/index.html | awk '{print $1}')
+          cat > app/latest.json <<EOF
+          {
+            "version": "1.5.3",
+            "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
+            "sha256": "$SHA",
+            "notes": "Admin Paneli içine canlı anonim giriş/çıkış/kayıt/açılış sayaçları bağlandı. Yeni EXE gerekmez."
+          }
+          EOF
+          printf '%s  %s\n' "$SHA" 'index.html' > app/index.sha256
+
+      - name: Publish v1.5.3
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/index.html app/latest.json app/index.sha256
+          git diff --cached --quiet && exit 0
+          git commit -m 'Publish MCU Tracker app v1.5.3 in-app admin telemetry'
+          git push
