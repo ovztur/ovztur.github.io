@@ -1,0 +1,67 @@
+{
+  "latest": "1.6.14",
+  "entries": [
+    {
+      "version": "1.6.14",
+      "date": "2026-08-12",
+      "title": "Hesap Silme ve Güncelleme Notları",
+      "items": [
+        "Normal kullanıcılar ve normal adminler artık yan menüdeki Hesabımı Sil butonuyla kendi hesaplarını silebilir.",
+        "ovztur Ana Admin hesabı kendi kendine silinemez.",
+        "Güncelleme Notları sekmesi eklendi.",
+        "Yeni bir sürüm geldiğinde Güncelleme Notları sekmesi o sürüm için bir kez otomatik açılır.",
+        "Eski tek seferlik yayın dosyaları ve bakım kalıntıları temizlendi."
+      ]
+    },
+    {
+      "version": "1.6.13",
+      "date": "2026-08-12",
+      "title": "Admin Paneli Düzeltmesi",
+      "items": [
+        "Nick ile Hesap Sil alanını iki kez oluşturan eski admin-nick-split modülü kaldırıldı.",
+        "Admin Paneli'nde tek Nick ile Hesap Sil kutusu bırakıldı."
+      ]
+    },
+    {
+      "version": "1.6.12",
+      "date": "2026-08-12",
+      "title": "Hesap Silme Arayüzü",
+      "items": [
+        "Ana Admin için hesap silme arayüzü tekilleştirildi.",
+        "Hesap satırlarındaki tekrarlı silme kontrolleri kaldırıldı."
+      ]
+    },
+    {
+      "version": "1.6.10",
+      "date": "2026-08-12",
+      "title": "Nick Yönetimi",
+      "items": [
+        "Nick ile Admin Yap ve Nick ile Hesap Sil araçları birbirinden ayrıldı."
+      ]
+    },
+    {
+      "version": "1.6.8",
+      "date": "2026-08-12",
+      "title": "Hesap Yönetimi",
+      "items": [
+        "Ana Admin'in kayıtlı hesapları silmesi için hesap silme yönetimi geliştirildi."
+      ]
+    },
+    {
+      "version": "1.6.6",
+      "date": "2026-08-12",
+      "title": "Nick ile Admin",
+      "items": [
+        "Ana Admin'in kullanıcı nicki yazarak hesabı Admin yapması eklendi."
+      ]
+    },
+    {
+      "version": "1.6.5",
+      "date": "2026-08-12",
+      "title": "Performans Düzeltmesi",
+      "items": [
+        "Admin kurtarma kodundaki sürekli DOM izleme ve kısa aralıklı polling kaldırılarak donma sorunu giderildi."
+      ]
+    }
+  ]
+}
