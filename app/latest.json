@@ -1,6 +1,6 @@
 {
-  "version": "1.6.14",
+  "version": "1.6.15",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "f8d9af4f00a592a9a5423f5361fa6b92b86a00bfd6658def1788a00256112c92",
-  "notes": "Kullanıcılar için görünür Hesabımı Sil butonu ve uygulama içi Güncelleme Notları sekmesi eklendi."
+  "sha256": "347887d9b6f498b241c29d4cc4e6db55c22ea2be0f017d7ba02604b739880ad4",
+  "notes": "Güncelleme Notları herkese açık kalır; Ana Admin kullanıcı adı herkese açık notlarda anonimleştirildi."
 }
