@@ -2,10 +2,6 @@ name: Build MCU Tracker v1.5.2 Internet Admin Updater
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'updater-v152/main.go'
-      - '.github/workflows/build-updater-v152.yml'
 
 permissions:
   contents: write
