@@ -1,0 +1,9 @@
+{
+  "enabled": false,
+  "event_url": "",
+  "stats_url": "",
+  "privacy": {
+    "personal_data": false,
+    "fields_sent": ["event","version","count"]
+  }
+}
