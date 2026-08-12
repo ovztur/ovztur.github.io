@@ -1,4 +1,4 @@
-name: Publish MCU Tracker v1.6.10 Clean Nick Tools Simple
+name: Publish MCU Tracker v1.6.11 Single Delete
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Patch files
-        run: python3 .github/scripts/patch-v1610-clean-nick-tools.py
+        run: python3 .github/scripts/patch-v1611-single-delete.py
       - name: Validate JavaScript
         run: |
           node --check app/telemetry.js
@@ -23,7 +23,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add app/telemetry.js app/account-delete.js app/index.html app/latest.json app/index.sha256
-          git commit -m 'Publish MCU Tracker v1.6.10 clean nick tools'
+          git add app/account-delete.js app/index.html app/latest.json app/index.sha256
+          git commit -m 'Publish MCU Tracker v1.6.11 single delete control'
           git pull --rebase origin main
           git push origin main
