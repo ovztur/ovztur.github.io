@@ -1,6 +1,6 @@
 {
   "version": "1.6.7",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "91be78f58a6e43da70e3512fbb60dcce8a989bf73486a239ffe3c28a56a32af0",
-  "notes": "Normal kullanıcı erişimi açıldı. Giriş/Kayıt ekranı admin hesabı olmadan da kullanılabilir; Admin Paneli yalnızca adminlere görünür."
+  "sha256": "0f11445a0acfe1e0cda24c05cb0cf09d0f718c9496545a2d00d423fd2852a1dc",
+  "notes": "Hesap silme eklendi: normal kullanıcı kendi hesabını silebilir; ovztur Ana Admin kendisi hariç tüm yerel hesapları silebilir."
 }
