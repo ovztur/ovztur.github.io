@@ -1,11 +1,11 @@
 from pathlib import Path
 import re, json, hashlib
 
-VERSION='1.6.12'
+VERSION='1.6.13'
 
 tp=Path('app/telemetry.js')
 s=tp.read_text(encoding='utf-8')
-s=re.sub(r"const VERSION='[^']+';", "const VERSION='1.6.12-lite';", s, count=1)
+s=re.sub(r"const VERSION='[^']+';", "const VERSION='1.6.13-lite';", s, count=1)
 
 # Keep only Admin grant/remove in account rows. Delete is handled only by the single nick delete box.
 old = '''<button data-admin-key="${esc(storedKey)}" data-admin-action="${a?'remove':'grant'}" class="${a?'secondary':''}">${a?'Adminliği Kaldır':'Admin Yap'}</button><button data-delete-key="${esc(storedKey)}" class="secondary">🗑️ Hesabı Sil</button>'''
@@ -26,26 +26,29 @@ tp.write_text(s,encoding='utf-8')
 # account-delete.js should only provide self-delete for non-primary accounts.
 ap=Path('app/account-delete.js')
 a=ap.read_text(encoding='utf-8')
-a=re.sub(r"const VERSION='[^']+';", "const VERSION='1.6.12';", a, count=1)
+a=re.sub(r"const VERSION='[^']+';", "const VERSION='1.6.13';", a, count=1)
 # Remove any admin-row injection function body if an old variant remains.
 a=re.sub(r"function injectPrimaryAdminDeletes\(\)\{.*?\n  \}", "function injectPrimaryAdminDeletes(){}", a, count=1, flags=re.S)
 ap.write_text(a,encoding='utf-8')
 
-# Deduplicate external script tags in the app HTML and cache-bust them.
+# Remove ALL old external admin UI helpers and re-add only the two current scripts.
 p=Path('app/index.html')
 html=p.read_text(encoding='utf-8')
+html=re.sub(r'<script\s+src="https://ovztur\.github\.io/app/admin-nick-split\.js\?v=[^"]+"\s*></script>', '', html)
 html=re.sub(r'<script\s+src="https://ovztur\.github\.io/app/telemetry\.js\?v=[^"]+"\s*></script>', '', html)
 html=re.sub(r'<script\s+src="https://ovztur\.github\.io/app/account-delete\.js\?v=[^"]+"\s*></script>', '', html)
-tags='<script src="https://ovztur.github.io/app/telemetry.js?v=1.6.12"></script><script src="https://ovztur.github.io/app/account-delete.js?v=1.6.12"></script>'
+tags='<script src="https://ovztur.github.io/app/telemetry.js?v=1.6.13"></script><script src="https://ovztur.github.io/app/account-delete.js?v=1.6.13"></script>'
 if '</body>' in html:
     html=html.replace('</body>',tags+'</body>',1)
 else:
     html+=tags
-html=re.sub(r'const MCU_APP_VERSION="[^"]+";', 'const MCU_APP_VERSION="1.6.12";', html)
+html=re.sub(r'const MCU_APP_VERSION="[^"]+";', 'const MCU_APP_VERSION="1.6.13";', html)
 
-if html.count('app/telemetry.js?v=1.6.12') != 1:
+if 'admin-nick-split.js' in html:
+    raise SystemExit('legacy admin-nick-split script tag still present')
+if html.count('app/telemetry.js?v=1.6.13') != 1:
     raise SystemExit('telemetry script tag not unique')
-if html.count('app/account-delete.js?v=1.6.12') != 1:
+if html.count('app/account-delete.js?v=1.6.13') != 1:
     raise SystemExit('account-delete script tag not unique')
 
 p.write_text(html,encoding='utf-8')
@@ -54,7 +57,7 @@ Path('app/latest.json').write_text(json.dumps({
   'version':VERSION,
   'url':'https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html',
   'sha256':sha,
-  'notes':'Hesap silme arayüzü tekilleştirildi: Ana Admin için yalnızca tek Nick ile Hesap Sil kutusu kaldı; hesap satırlarındaki ek silme düğmeleri kaldırıldı.'
+  'notes':'Eski admin-nick-split modülü kaldırıldı. Ana Admin panelinde yalnızca tek Nick ile Hesap Sil kutusu kalır.'
 },ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 Path('app/index.sha256').write_text(f'{sha}  index.html\n',encoding='utf-8')
 print('patched',VERSION,sha)
