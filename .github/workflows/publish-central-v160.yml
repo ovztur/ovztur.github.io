@@ -23,12 +23,14 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           s=Path('app/index.html').read_text(encoding='utf-8')
-          a=s.find('<script>')+8
-          b=s.rfind('</script>')
-          Path('/tmp/app.js').write_text(s[a:b],encoding='utf-8')
+          blocks=re.findall(r'<script>([\s\S]*?)</script>',s)
+          for i,b in enumerate(blocks):
+              Path(f'/tmp/app-{i}.js').write_text(b,encoding='utf-8')
+          print(len(blocks))
           PY
-          node --check /tmp/app.js
+          for f in /tmp/app-*.js; do node --check "$f"; done
       - name: Publish
         shell: bash
         run: |
