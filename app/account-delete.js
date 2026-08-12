@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.13';
+  const VERSION='1.6.14';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
   const STATE_PREFIX='MCU_TRACKER_USER_STATE_V1_';
@@ -25,31 +25,42 @@
     delete users[storedKey];
     writeUsers(users);
     localStorage.removeItem(SESSION_KEY);
-    setTimeout(()=>location.reload(),50);
+    setTimeout(()=>location.reload(),80);
     return{ok:true,msg:`@${target.username||storedKey} hesabı silindi.`};
   }
 
   function confirmDelete(label){
     if(!confirm(`${label} hesabı silinsin mi?\n\nBu işlem geri alınamaz.`))return false;
-    return confirm('Son onay: Hesap ve bu hesaba ait yerel ilerleme verileri kalıcı olarak silinecek. Devam edilsin mi?');
+    return confirm('SON ONAY: Hesap ile bu hesaba ait izleme, favori, not, XP, kupa ve puan verileri kalıcı olarak silinecek. Devam edilsin mi?');
   }
 
   function ensureSelfDelete(){
     const {key,user}=account();
-    if(!user||primary(user))return;
-    const box=document.getElementById('menuAccount');
-    if(!box||box.querySelector('#mcuSelfDeleteBtn'))return;
+    const existing=document.getElementById('mcuSelfDeleteBtn');
+    if(!user||primary(user)){
+      existing?.remove();
+      return;
+    }
+    if(existing)return;
+    const side=document.getElementById('sideMenu');
+    if(!side)return;
     const btn=document.createElement('button');
     btn.id='mcuSelfDeleteBtn';
-    btn.className='secondary';
+    btn.className='menu-category';
+    btn.type='button';
     btn.textContent='🗑️ Hesabımı Sil';
-    btn.style.cssText='width:100%;margin-top:8px';
-    btn.onclick=()=>{
-      const label='@'+(user.username||key);
+    btn.style.cssText='border-color:rgba(255,90,90,.35);color:#ffb3b3';
+    btn.onclick=e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const now=account();
+      if(!now.user||primary(now.user))return;
+      const label='@'+(now.user.username||now.key);
       if(!confirmDelete(label))return;
-      deleteStoredAccount(key);
+      deleteStoredAccount(now.key);
     };
-    box.appendChild(btn);
+    const logout=document.getElementById('logoutBtn');
+    if(logout)side.insertBefore(btn,logout);else side.appendChild(btn);
   }
 
   function install(){
