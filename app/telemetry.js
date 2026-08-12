@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.10-lite';
+  const VERSION='1.6.12-lite';
   const CONFIG_URL='https://ovztur.github.io/config/analytics.json';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
@@ -52,7 +52,7 @@
   function roleRows(users,current){
     return Object.entries(users).sort(([,a],[,b])=>{const ap=primary(a),bp=primary(b);if(ap!==bp)return ap?-1:1;return String(a.username||'').localeCompare(String(b.username||''),'tr')}).map(([storedKey,u])=>{
       const p=primary(u),a=admin(u);
-      const controls=p?'<button class="secondary" disabled>Kalıcı Ana Admin</button>':primary(current)?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button data-admin-key="${esc(storedKey)}" data-admin-action="${a?'remove':'grant'}" class="${a?'secondary':''}">${a?'Adminliği Kaldır':'Admin Yap'}</button><button data-delete-key="${esc(storedKey)}" class="secondary">🗑️ Hesabı Sil</button></div>`:'<span class="meta">Yetki yönetimi yalnızca ovztur hesabında.</span>';
+      const controls=p?'<button class="secondary" disabled>Kalıcı Ana Admin</button>':primary(current)?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button data-admin-key="${esc(storedKey)}" data-admin-action="${a?'remove':'grant'}" class="${a?'secondary':''}">${a?'Adminliği Kaldır':'Admin Yap'}</button></div>`:'<span class="meta">Yetki yönetimi yalnızca ovztur hesabında.</span>';
       return `<div class="panel" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><b>${esc(u.displayName||u.username||storedKey)}</b> <span class="meta">@${esc(u.username||storedKey)}</span><div style="margin-top:6px"><span class="role-badge ${a?'admin':''}">${p?'🛡️ Ana Admin':a?'👑 Admin':'👤 Kullanıcı'}</span></div></div><div>${controls}</div></div>`;
     }).join('')
   }
@@ -114,8 +114,6 @@
     if(deleteNickInput)deleteNickInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doDelete()}});
 
     document.querySelectorAll('[data-admin-action]').forEach(btn=>btn.onclick=()=>{if(!primary(current))return;const all=readUsers(),k=btn.dataset.adminKey,target=all[k];if(!target||primary(target))return;const make=btn.dataset.adminAction==='grant';if(!confirm(`${target.username||k} hesabı ${make?'Admin yapılsın mı?':'normal kullanıcıya çevrilsin mi?'}`))return;target.role=make?'admin':'user';target.isPrimaryAdmin=false;all[k]=target;writeUsers(all);renderAdmin(`@${target.username||k} ${make?'Admin yapıldı.':'normal kullanıcı yapıldı.'}`)});
-
-    document.querySelectorAll('[data-delete-key]').forEach(btn=>btn.onclick=()=>{if(!primary(current))return;const all=readUsers(),k=btn.dataset.deleteKey,target=all[k];if(!target||primary(target))return;const label=target.username||k;if(!confirm(`@${label} hesabı silinsin mi?\n\nBu hesaba ait yerel profil verileri de silinecek.`))return;if(!confirm(`SON ONAY: @${label} hesabını kalıcı olarak silmek istediğine emin misin?`))return;const r=deleteAccountByKey(k);renderAdmin(r.msg)});
 
     const j=await stats(),grid=document.getElementById('mcuStats'),status=document.getElementById('mcuStatsStatus');if(!grid)return;
     if(!j?.ok){grid.innerHTML='<div class="metric-card"><b>—</b><small>Bağlantı yok</small></div>';if(status)status.textContent='Canlı sayaç servisine ulaşılamadı.';return}

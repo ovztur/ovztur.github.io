@@ -1,6 +1,6 @@
 {
-  "version": "1.6.11",
+  "version": "1.6.12",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "8d8053981825482075e1f2607474f646db7589292e83c3b0c0f5c8253add220b",
-  "notes": "Hesap silme kontrollerindeki tekrar kaldırıldı; her hesap için tek Hesabı Sil düğmesi bırakıldı."
+  "sha256": "4795e5d7e2dc546ae693d2e80398d87a12537ac0cf3ceb345737e5ea938e6eb5",
+  "notes": "Hesap silme arayüzü tekilleştirildi: Ana Admin için yalnızca tek Nick ile Hesap Sil kutusu kaldı; hesap satırlarındaki ek silme düğmeleri kaldırıldı."
 }
