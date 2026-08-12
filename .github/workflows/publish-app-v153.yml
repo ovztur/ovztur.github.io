@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: mcu-app-content-publish
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -61,4 +65,5 @@ jobs:
           git add app/index.html app/latest.json app/index.sha256
           git diff --cached --quiet && exit 0
           git commit -m 'Publish MCU Tracker app v1.5.3 in-app admin telemetry'
-          git push
+          git pull --rebase origin main
+          git push origin main
