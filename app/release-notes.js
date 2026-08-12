@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.16';
+  const VERSION='1.6.17';
   const CHANGELOG_URL='https://ovztur.github.io/app/changelog.json';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
   const SEEN_KEY='MCU_TRACKER_CHANGELOG_SEEN_VERSION';
