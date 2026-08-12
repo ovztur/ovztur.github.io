@@ -1,19 +1,24 @@
-# MCU Tracker anonim istatistik ilkesi
+# MCU Tracker Ultimate — Gizlilik
 
-Anonim istatistik backend'i etkinleştirildiğinde sunucuya gönderilecek alanlar:
-- event: izin verilen olay adı
-- version: uygulama sürümü
-- count: toplu sayaç artışı
+MCU Tracker Ultimate, hesap ve ilerleme verilerini cihazdaki yerel depolamada tutar.
 
-Saklanmayacaklar:
-- kullanıcı adı
-- profil adı
-- e-posta / Gmail
-- şifre / şifre özeti
-- cihaz kimliği / benzersiz kurulum kimliği
-- notlar
-- kişisel film puanları
-- hangi filmin izlendiği
-- favoriler
+## Uygulama verileri
+Kullanıcı adı, profil adı, parola özeti, izlenen içerikler, favoriler, notlar, kişisel puanlar, XP, kupalar ve tema seçimi cihazda tutulur. Bu veriler anonim istatistik servisine gönderilmez.
 
-GitHub Pages üzerindeki mevcut yayın statiktir; anonim sayaç API'si ayrı backend bağlandığında etkinleştirilecektir.
+## Anonim kullanım istatistikleri
+Anonim sayaç sistemi etkinleştirildiğinde yalnızca şu alanlar gönderilir ve toplu olarak saklanır:
+
+- olay türü (`app_open`, `login`, `logout`, `movie_completed`, `season_completed`, `trophy_unlocked`, güncelleme olayları vb.)
+- uygulama sürümü
+- adet
+- sunucuda toplama için gün
+
+Kullanıcı adı, e-posta, parola, IP adresi, cihaz kimliği, notlar, kişisel film puanları ve hangi filmin/dizinin izlendiği analitik verisi olarak saklanmaz.
+
+## Admin paneli
+Admin paneli kişi listesi oluşturmaz. Yalnızca toplu sayaçları ve sürüm dağılımını gösterir.
+
+## Güncelleme güvenliği
+MCU Tracker güncelleme manifestlerini HTTPS üzerinden kontrol eder ve indirilen uygulama dosyalarını SHA-256 değeriyle doğrular.
+
+MCU Tracker bağımsız bir fan takip aracıdır; Marvel veya Disney tarafından desteklenmiş ya da onaylanmış değildir.
