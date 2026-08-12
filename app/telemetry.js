@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.3-rescue';
+  const VERSION='1.6.4-rescue';
   const CONFIG_URL='https://ovztur.github.io/config/analytics.json';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
@@ -30,6 +30,30 @@
     return fixed;
   }
 
+  function ensureAdminButton(isAdmin){
+    let btn=document.getElementById('adminMenuBtn');
+    if(!btn&&isAdmin){
+      const side=document.getElementById('sideMenu');
+      if(side){
+        btn=document.createElement('button');
+        btn.className='menu-category admin-menu';
+        btn.id='adminMenuBtn';
+        btn.dataset.cat='admin';
+        btn.textContent='🛡️ Admin Paneli';
+        const anchor=side.querySelector('.category-info')||side.querySelector('#logoutBtn');
+        if(anchor) side.insertBefore(btn,anchor); else side.appendChild(btn);
+      }
+    }
+    if(btn){
+      btn.classList.toggle('hidden',!isAdmin);
+      if(isAdmin&&!btn.dataset.mcuRescueBound){
+        btn.dataset.mcuRescueBound='1';
+        btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();renderRescueAdmin()},{capture:true});
+      }
+    }
+    return btn;
+  }
+
   function paintRoleUI(){
     const u=normalizePrimary()||account().user;
     if(!u)return;
@@ -41,14 +65,7 @@
     }
     const profileBadge=document.querySelector('.profile-hero .role-badge');
     if(profileBadge&&isPrimary){profileBadge.classList.add('admin');profileBadge.textContent='🛡️ Ana Admin Hesabı'}
-    const btn=document.getElementById('adminMenuBtn');
-    if(btn){
-      btn.classList.toggle('hidden',!isAdmin);
-      if(isAdmin&&!btn.dataset.mcuRescueBound){
-        btn.dataset.mcuRescueBound='1';
-        btn.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();renderRescueAdmin()};
-      }
-    }
+    ensureAdminButton(isAdmin);
   }
 
   function roleRows(users,current){
