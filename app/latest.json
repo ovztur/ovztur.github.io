@@ -1,6 +1,6 @@
 {
-  "version": "1.5.0",
+  "version": "1.5.1",
   "url": "https://ovztur.github.io/app/index.html",
-  "sha256": "b4888a3d305c02a6cc010208910c11ae9631d8c4b1f159d084c9fb533e81c25e",
-  "notes": "MCU Tracker v1.5.0 uygulama içeriği. Hesap ve ilerleme verileri cihazda kalır."
+  "sha256": "3b84a9f861894817f084abb3d7a18d6b7f5efaddae28c5eca1e5c19aea77bbf1",
+  "notes": "MCU Tracker uygulama içeriği + privacy-first anonim olay adaptörü. Hesap ve ilerleme verileri cihazda kalır."
 }
