@@ -1,1 +1,0 @@
-MCU Tracker v1.6.4 stable admin release: proven local account/admin HTML restored, ovztur remains permanent primary admin, rescue telemetry creates the Admin Panel button even on stale clients. Legacy auto-publishers are disabled.
