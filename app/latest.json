@@ -1,6 +1,6 @@
 {
-  "version": "1.6.4",
+  "version": "1.6.5",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "9d3b2c80135e5b250888ea8a29b113b3437efd317798e3f0dd2aa3d74f0c0c60",
-  "notes": "Stable Admin restore: ovztur permanent primary admin; Admin Panel restored; stale clients get rescue button from telemetry.js; legacy publishers disabled."
+  "sha256": "5531432f2b0d69bdbefc9693c73afbf2ff1fb7022ade6b40c53962b0e9b86e7d",
+  "notes": "Performance hotfix: continuous MutationObserver and 750ms admin rescue polling removed; Admin Panel remains available."
 }
