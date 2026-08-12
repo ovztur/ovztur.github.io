@@ -1,0 +1,95 @@
+name: Publish MCU Tracker v1.6.16 IMDb In-App
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-v1616-imdb-inapp.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JavaScript
+        run: |
+          node --check app/telemetry.js
+          node --check app/account-delete.js
+          node --check app/release-notes.js
+          node --check app/imdb-inapp.js
+
+      - name: Patch app to v1.6.16
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json, hashlib
+
+          version='1.6.16'
+
+          # Keep module versions aligned.
+          replacements=[
+              ('app/telemetry.js', "const VERSION='1.6.16-lite';"),
+              ('app/account-delete.js', "const VERSION='1.6.16';"),
+              ('app/release-notes.js', "const VERSION='1.6.16';"),
+          ]
+          for name,repl in replacements:
+              p=Path(name)
+              s=p.read_text(encoding='utf-8')
+              s=re.sub(r"const VERSION='[^']+';", repl, s, count=1)
+              p.write_text(s,encoding='utf-8')
+
+          p=Path('app/index.html')
+          s=p.read_text(encoding='utf-8')
+          s=re.sub(r'const MCU_APP_VERSION="[^"]+";', f'const MCU_APP_VERSION="{version}";', s, count=1)
+
+          for name in ('telemetry.js','account-delete.js','release-notes.js','imdb-inapp.js'):
+              s=re.sub(rf'<script\s+src="https://ovztur\.github\.io/app/{re.escape(name)}\?v=[^"]+"\s*></script>', '', s)
+
+          tags=(
+              f'<script src="https://ovztur.github.io/app/telemetry.js?v={version}"></script>'
+              f'<script src="https://ovztur.github.io/app/account-delete.js?v={version}"></script>'
+              f'<script src="https://ovztur.github.io/app/release-notes.js?v={version}"></script>'
+              f'<script src="https://ovztur.github.io/app/imdb-inapp.js?v={version}"></script>'
+          )
+          if '</body>' not in s:
+              raise SystemExit('body close tag missing')
+          s=s.replace('</body>', tags+'</body>', 1)
+
+          for name in ('telemetry.js','account-delete.js','release-notes.js','imdb-inapp.js'):
+              marker=f'app/{name}?v={version}'
+              if s.count(marker)!=1:
+                  raise SystemExit(f'{name} script tag not unique: {s.count(marker)}')
+
+          p.write_text(s,encoding='utf-8')
+          sha=hashlib.sha256(p.read_bytes()).hexdigest()
+          Path('app/index.sha256').write_text(f'{sha}  index.html\n',encoding='utf-8')
+          Path('app/latest.json').write_text(json.dumps({
+              'version':version,
+              'url':'https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html',
+              'sha256':sha,
+              'notes':'IMDb puanı ve oy sayısı uygulama içinde kalır; dış IMDb Sayfası yönlendirme butonu kaldırıldı.'
+          },ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print('published',version,sha)
+          PY
+
+      - name: Validate patched JavaScript
+        run: |
+          node --check app/telemetry.js
+          node --check app/account-delete.js
+          node --check app/release-notes.js
+          node --check app/imdb-inapp.js
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/index.html app/index.sha256 app/latest.json app/telemetry.js app/account-delete.js app/release-notes.js app/imdb-inapp.js
+          git commit -m 'Publish MCU Tracker v1.6.16 IMDb in-app display'
+          git push
