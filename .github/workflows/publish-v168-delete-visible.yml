@@ -1,4 +1,4 @@
-name: Publish MCU Tracker v1.6.8 Delete Visible
+name: Publish MCU Tracker v1.6.9 Separate Nick Tools
 
 on:
   push:
@@ -18,8 +18,9 @@ jobs:
         run: |
           node --check app/telemetry.js
           node --check app/account-delete.js
+          node --check app/admin-nick-split.js
 
-      - name: Patch app to v1.6.8
+      - name: Patch app to v1.6.9
         shell: bash
         run: |
           set -euo pipefail
@@ -28,27 +29,33 @@ jobs:
           import re, json, hashlib
           p=Path('app/index.html')
           s=p.read_text(encoding='utf-8')
-          s=re.sub(r'https://ovztur\.github\.io/app/telemetry\.js\?v=[^"\']+', 'https://ovztur.github.io/app/telemetry.js?v=1.6.8', s)
-          s=re.sub(r'https://ovztur\.github\.io/app/account-delete\.js\?v=[^"\']+', 'https://ovztur.github.io/app/account-delete.js?v=1.6.8', s)
-          s=re.sub(r'const MCU_APP_VERSION="[^"]+";', 'const MCU_APP_VERSION="1.6.8";', s)
+          s=re.sub(r'https://ovztur\.github\.io/app/telemetry\.js\?v=[^"\']+', 'https://ovztur.github.io/app/telemetry.js?v=1.6.9', s)
+          s=re.sub(r'https://ovztur\.github\.io/app/account-delete\.js\?v=[^"\']+', 'https://ovztur.github.io/app/account-delete.js?v=1.6.9', s)
+          split_tag='<script src="https://ovztur.github.io/app/admin-nick-split.js?v=1.6.9"></script>'
+          s=re.sub(r'<script src="https://ovztur\.github\.io/app/admin-nick-split\.js\?v=[^"]+"></script>', '', s)
+          if '</body>' in s:
+              s=s.replace('</body>',split_tag+'</body>',1)
+          else:
+              s+=split_tag
+          s=re.sub(r'const MCU_APP_VERSION="[^"]+";', 'const MCU_APP_VERSION="1.6.9";', s)
           p.write_text(s,encoding='utf-8')
           sha=hashlib.sha256(p.read_bytes()).hexdigest()
           Path('app/latest.json').write_text(json.dumps({
-            'version':'1.6.8',
+            'version':'1.6.9',
             'url':'https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html',
             'sha256':sha,
-            'notes':'Hesap silme görünürlük düzeltmesi: silme kontrolleri Admin Panelinin kendi gövdesine entegre edildi ve script önbelleği yenilendi.'
+            'notes':'Nick ile Admin Yap ve Nick ile Hesap Sil araçları Admin Panelinde iki ayrı kutuya ayrıldı.'
           },ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           Path('app/index.sha256').write_text(f'{sha}  index.html\n',encoding='utf-8')
           print('sha256',sha)
           PY
 
-      - name: Commit v1.6.8
+      - name: Commit v1.6.9
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add app/index.html app/latest.json app/index.sha256
-          git commit -m 'Publish MCU Tracker v1.6.8 account delete visibility fix'
+          git commit -m 'Publish MCU Tracker v1.6.9 separate nick tools'
           git push
