@@ -1,0 +1,7 @@
+name = "mcu-tracker-analytics"
+compatibility_date = "2026-08-12"
+pages_build_output_dir = "../../"
+
+# Cloudflare Pages/Workers tarafında D1 binding adı ANALYTICS olmalı.
+# Gerçek database_id Cloudflare panelinden üretildikten sonra eklenir.
+# ADMIN_TOKEN secret olarak tanımlanmalıdır; repoya yazılmaz.
