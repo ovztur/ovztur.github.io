@@ -1,97 +1,95 @@
 (()=>{
   'use strict';
+  const VERSION='1.6.3-rescue';
   const CONFIG_URL='https://ovztur.github.io/config/analytics.json';
-  const VERSION='1.6.2';
+  const USERS_KEY='MCU_TRACKER_USERS_V1';
+  const SESSION_KEY='MCU_TRACKER_SESSION_V1';
   let cfg={enabled:false,event_url:'',stats_url:''};
   const once=new Set();
 
-  async function loadConfig(){
-    try{
-      const r=await fetch(CONFIG_URL+'?t='+Date.now(),{cache:'no-store'});
-      if(r.ok) cfg=await r.json();
-    }catch{}
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const keyOf=v=>String(v||'').trim().toLocaleLowerCase('tr-TR');
+  const readUsers=()=>{try{return JSON.parse(localStorage.getItem(USERS_KEY)||'{}')||{}}catch{return {}}};
+  const writeUsers=u=>{try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catch{}};
+  const sessionKey=()=>localStorage.getItem(SESSION_KEY)||'';
+  const account=()=>{const u=readUsers();const sk=sessionKey();return {users:u,key:sk,user:u[sk]||null}};
+  const primary=u=>keyOf(u?.username||u?.key)==='ovztur';
+  const admin=u=>primary(u)||u?.role==='admin';
+
+  async function loadConfig(){try{const r=await fetch(CONFIG_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)cfg=await r.json()}catch{}}
+  function send(event,count=1){if(!cfg?.enabled||!cfg?.event_url)return;const body=JSON.stringify({event:String(event),version:VERSION,count:Number(count)||1});try{if(navigator.sendBeacon){const blob=new Blob([body],{type:'application/json'});if(navigator.sendBeacon(cfg.event_url,blob))return}}catch{}fetch(cfg.event_url,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true,cache:'no-store'}).catch(()=>{})}
+  function sendOnce(k,e){if(once.has(k))return;once.add(k);send(e)}
+  async function stats(){if(!cfg?.enabled||!cfg?.stats_url)return {ok:false,totals:{}};try{const r=await fetch(cfg.stats_url+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j?.ok)throw new Error(j?.error||'stats_error');return j}catch(e){return {ok:false,error:String(e?.message||e),totals:{}}}}
+
+  function normalizePrimary(){
+    const {users,key,user}=account();
+    if(!user||!primary(user))return user;
+    const fixed={...user,key:'ovztur',username:'ovztur',role:'admin',isPrimaryAdmin:true};
+    if(key!=='ovztur'){delete users[key];users.ovztur=fixed;localStorage.setItem(SESSION_KEY,'ovztur')}else users[key]=fixed;
+    writeUsers(users);
+    return fixed;
   }
 
-  function send(event,count=1){
-    if(!cfg?.enabled||!cfg?.event_url) return;
-    const body=JSON.stringify({event:String(event),version:VERSION,count:Number(count)||1});
-    try{
-      if(navigator.sendBeacon){
-        const blob=new Blob([body],{type:'application/json'});
-        if(navigator.sendBeacon(cfg.event_url,blob)) return;
+  function paintRoleUI(){
+    const u=normalizePrimary()||account().user;
+    if(!u)return;
+    const isPrimary=primary(u),isAdmin=admin(u);
+    const box=document.getElementById('menuAccount');
+    if(box){
+      const badge=box.querySelector('.role-badge');
+      if(badge){badge.classList.toggle('admin',isAdmin);badge.textContent=isPrimary?'🛡️ Ana Admin':isAdmin?'👑 Admin':'👤 Kullanıcı'}
+    }
+    const profileBadge=document.querySelector('.profile-hero .role-badge');
+    if(profileBadge&&isPrimary){profileBadge.classList.add('admin');profileBadge.textContent='🛡️ Ana Admin Hesabı'}
+    const btn=document.getElementById('adminMenuBtn');
+    if(btn){
+      btn.classList.toggle('hidden',!isAdmin);
+      if(isAdmin&&!btn.dataset.mcuRescueBound){
+        btn.dataset.mcuRescueBound='1';
+        btn.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();renderRescueAdmin()};
       }
-    }catch{}
-    fetch(cfg.event_url,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true,cache:'no-store'}).catch(()=>{});
+    }
   }
 
-  function sendOnce(key,event){if(once.has(key))return;once.add(key);send(event)}
-
-  async function stats(){
-    if(!cfg?.enabled||!cfg?.stats_url) return {ok:false,error:'disabled',totals:{}};
-    try{
-      const r=await fetch(cfg.stats_url+'?t='+Date.now(),{cache:'no-store'});
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      const j=await r.json();
-      if(!j?.ok) throw new Error(j?.error||'stats_error');
-      return j;
-    }catch(e){return {ok:false,error:String(e?.message||e),totals:{}}}
+  function roleRows(users,current){
+    const list=Object.values(users).sort((a,b)=>{const ap=primary(a),bp=primary(b);if(ap!==bp)return ap?-1:1;return String(a.username||'').localeCompare(String(b.username||''),'tr')});
+    return list.map(u=>{const k=keyOf(u.username||u.key),p=primary(u),a=admin(u);return `<div class="panel" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><b>${esc(u.displayName||u.username||k)}</b> <span class="meta">@${esc(u.username||k)}</span><div style="margin-top:6px"><span class="role-badge ${a?'admin':''}">${p?'🛡️ Ana Admin':a?'👑 Admin':'👤 Kullanıcı'}</span></div></div><div>${p?'<button class="secondary" disabled>Kalıcı Ana Admin</button>':primary(current)?`<button data-rescue-admin-key="${esc(k)}" data-rescue-admin-action="${a?'remove':'grant'}" class="${a?'secondary':''}">${a?'Adminliği Kaldır':'Admin Yap'}</button>`:'<span class="meta">Yetki yönetimi yalnızca ovztur hesabında.</span>'}</div></div>`}).join('')
   }
 
-  function wrap(name,make){
-    try{
-      const original=window[name];
-      if(typeof original!=='function'||original.__mcuTelemetryWrapped)return;
-      const wrapped=make(original);wrapped.__mcuTelemetryWrapped=true;window[name]=wrapped;
-    }catch{}
+  async function renderRescueAdmin(){
+    const {users,user}=account();
+    const current=normalizePrimary()||user;
+    if(!current||!admin(current))return;
+    const subtitle=document.getElementById('subtitle');if(subtitle)subtitle.textContent='ADMIN MERKEZİ';
+    document.querySelectorAll('.menu-category').forEach(b=>b.classList.toggle('active',b.id==='adminMenuBtn'));
+    const host=document.getElementById('movieList');if(!host)return;
+    const list=Object.values(users),admins=list.filter(admin);
+    host.innerHTML=`<section class="profile-hero" style="grid-template-columns:72px 1fr"><div class="profile-avatar">🛡️</div><div><div class="profile-name">Admin Merkezi</div><div class="profile-rank">${primary(current)?'Ana Admin • ovztur':'Yetkili Admin'}</div><p class="meta" style="margin:8px 0 0">Bu cihazdaki hesap: ${list.length} • Admin: ${admins.length} • Ana Admin: 1</p></div></section><section class="panel"><h3 style="margin-top:0">🌐 Canlı Kullanım</h3><p class="meta">Yalnızca toplu anonim sayaçlar tutulur. Kullanıcı adı, şifre, izleme geçmişi, not ve kişisel puan sunucuya gönderilmez.</p><div class="metric-grid" id="mcuRescueStats"><div class="metric-card"><b>…</b><small>Uygulama açılışı</small></div><div class="metric-card"><b>…</b><small>Giriş</small></div><div class="metric-card"><b>…</b><small>Çıkış</small></div><div class="metric-card"><b>…</b><small>Kayıt</small></div></div><div class="meta" id="mcuRescueStatsStatus">Sunucu verisi alınıyor…</div></section><section class="panel"><h3 style="margin-top:0">Yetki Sistemi</h3><p><b>ovztur</b> kalıcı Ana Admin hesabıdır.</p><p class="meta">Admin yaptığın hesaplar Admin Paneli sekmesini görür. Admin verme/kaldırma yetkisi yalnızca ovztur hesabındadır.</p></section>${roleRows(users,current)}<section class="panel"><h3 style="margin-top:0">🔒 Gizlilik</h3><p class="meta">Şifreler gösterilmez; izleme geçmişi, notlar ve kişisel puanlar bu panelde açılmaz.</p></section>`;
+    document.getElementById('loadMore')?.classList.add('hidden');
+    document.querySelectorAll('[data-rescue-admin-action]').forEach(btn=>btn.onclick=()=>{
+      if(!primary(current))return;
+      const k=keyOf(btn.dataset.rescueAdminKey);if(k==='ovztur')return;
+      const all=readUsers(),target=all[k];if(!target)return;
+      const make=btn.dataset.rescueAdminAction==='grant';
+      if(!confirm(`${target.username||k} hesabı ${make?'Admin yapılsın mı?':'normal kullanıcıya çevrilsin mi?'}`))return;
+      target.role=make?'admin':'user';target.isPrimaryAdmin=false;all[k]=target;writeUsers(all);renderRescueAdmin();
+    });
+    const j=await stats();
+    const grid=document.getElementById('mcuRescueStats'),status=document.getElementById('mcuRescueStatsStatus');if(!grid)return;
+    if(!j?.ok){grid.innerHTML='<div class="metric-card"><b>—</b><small>Bağlantı yok</small></div>';if(status)status.textContent='Canlı sayaç servisine ulaşılamadı.';return}
+    const t=j.totals||{},fmt=v=>Number(v||0).toLocaleString('tr-TR');
+    grid.innerHTML=`<div class="metric-card"><b>${fmt(t.app_open)}</b><small>Uygulama açılışı</small></div><div class="metric-card"><b>${fmt(t.login)}</b><small>Giriş</small></div><div class="metric-card"><b>${fmt(t.logout)}</b><small>Çıkış</small></div><div class="metric-card"><b>${fmt(t.register)}</b><small>Kayıt</small></div>`;
+    if(status)status.textContent='Canlı • kurtarma katmanı '+VERSION+' • anonim toplu sayaçlar';
   }
 
-  function forcePrimaryAdmin(){
-    try{
-      const u=window.currentUser;
-      if(!u) return;
-      const k=String(u.username||u.key||'').trim().toLowerCase();
-      if(k!=='ovztur') return;
-      u.username='ovztur';u.role='admin';u.isPrimaryAdmin=true;
-      if(window.users&&window.users.ovztur){window.users.ovztur.role='admin';window.users.ovztur.isPrimaryAdmin=true;}
-      const btn=document.getElementById('adminMenuBtn');if(btn)btn.classList.remove('hidden');
-      const box=document.getElementById('menuAccount');
-      if(box){const badge=box.querySelector('.role-badge');if(badge)badge.textContent='🛡️ Ana Admin';}
-    }catch{}
-  }
-
-  function adminStatsSection(){
-    const sec=document.createElement('section');sec.className='panel';sec.id='mcuLiveAdminStats';
-    sec.innerHTML=`<h3 style="margin-top:0">🌐 Canlı Kullanım</h3><p class="meta">Yalnızca toplu anonim sayaçlar tutulur. Kullanıcı adı, şifre, izleme geçmişi, not ve kişisel puan gönderilmez.</p><div class="metric-grid" id="mcuLiveAdminStatsGrid"><div class="metric-card"><b>…</b><small>Uygulama açılışı</small></div><div class="metric-card"><b>…</b><small>Giriş</small></div><div class="metric-card"><b>…</b><small>Çıkış</small></div><div class="metric-card"><b>…</b><small>Kayıt</small></div></div><div class="meta" id="mcuLiveAdminStatsStatus">Sunucu verisi alınıyor…</div>`;
-    return sec;
-  }
-
-  async function attachAdminStats(){
-    try{
-      forcePrimaryAdmin();
-      if(window.currentCategory!=='admin'||!window.isAdmin?.())return;
-      const host=document.getElementById('movieList');if(!host)return;
-      document.getElementById('mcuLiveAdminStats')?.remove();
-      const sec=adminStatsSection(),hero=host.querySelector('.profile-hero');if(hero)hero.after(sec);else host.prepend(sec);
-      const j=await stats();if(window.currentCategory!=='admin')return;
-      const grid=document.getElementById('mcuLiveAdminStatsGrid'),status=document.getElementById('mcuLiveAdminStatsStatus');if(!grid)return;
-      if(!j?.ok){grid.innerHTML='<div class="metric-card"><b>—</b><small>Bağlantı yok</small></div>';if(status)status.textContent='Canlı sayaç servisine ulaşılamadı.';return;}
-      const t=j.totals||{},fmt=v=>Number(v||0).toLocaleString('tr-TR');
-      grid.innerHTML=`<div class="metric-card"><b>${fmt(t.app_open)}</b><small>Uygulama açılışı</small></div><div class="metric-card"><b>${fmt(t.login)}</b><small>Giriş</small></div><div class="metric-card"><b>${fmt(t.logout)}</b><small>Çıkış</small></div><div class="metric-card"><b>${fmt(t.register)}</b><small>Kayıt</small></div>`;
-      if(status)status.textContent='Canlı • MCU Tracker v'+VERSION+' • anonim toplu sayaçlar';
-    }catch{}
-  }
-
+  function wrap(name,make){try{const orig=window[name];if(typeof orig!=='function'||orig.__mcuRescueWrapped)return;const w=make(orig);w.__mcuRescueWrapped=true;window[name]=w}catch{}}
   function install(){
-    forcePrimaryAdmin();sendOnce('app_open','app_open');
-    wrap('loginUser',orig=>async function(key){const u=window.users?.[key];const isNew=!!u?.createdAt&&(Date.now()-Number(u.createdAt)<15000);const out=await orig.apply(this,arguments);forcePrimaryAdmin();send(isNew?'register':'login');return out;});
+    normalizePrimary();paintRoleUI();sendOnce('app_open','app_open');
+    wrap('loginUser',orig=>async function(key){const before=readUsers()[key];const fresh=!!before?.createdAt&&(Date.now()-Number(before.createdAt)<15000);const out=await orig.apply(this,arguments);paintRoleUI();send(fresh?'register':'login');return out});
     wrap('logout',orig=>function(){send('logout');return orig.apply(this,arguments)});
-    wrap('updateAccountUI',orig=>function(){const out=orig.apply(this,arguments);forcePrimaryAdmin();return out});
-    wrap('renderAdminPanel',orig=>async function(){forcePrimaryAdmin();const out=await orig.apply(this,arguments);await attachAdminStats();return out});
-    wrap('setMovieWatched',orig=>function(item,value){let before=false;try{before=!!window.state?.watched?.[window.idOf(item)]}catch{}const out=orig.apply(this,arguments);if(value&&!before)send('movie_complete');return out});
-    wrap('setSeriesWatched',orig=>function(show,season,value){let before=false;try{before=!!window.state?.watched?.[window.idOf(show,'series',season)]}catch{}const out=orig.apply(this,arguments);if(value&&!before)send('season_complete');return out});
-    wrap('enqueueTrophy',orig=>function(a){if(a&&!a.testMode)send('trophy_unlock');return orig.apply(this,arguments)});
-    wrap('resetAccountProgress',orig=>function(){const before=JSON.stringify(window.state||{});const out=orig.apply(this,arguments);setTimeout(()=>{try{if(JSON.stringify(window.state||{})!==before)send('progress_reset')}catch{}},0);return out});
-    setTimeout(forcePrimaryAdmin,200);setTimeout(forcePrimaryAdmin,1000);
+    const observer=new MutationObserver(()=>paintRoleUI());
+    observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+    setInterval(paintRoleUI,750);
   }
 
   loadConfig().finally(()=>{if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0)});
