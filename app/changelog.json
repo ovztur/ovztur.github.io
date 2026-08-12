@@ -1,13 +1,23 @@
 {
-  "latest": "1.6.14",
+  "latest": "1.6.15",
   "entries": [
+    {
+      "version": "1.6.15",
+      "date": "2026-08-12",
+      "title": "Gizlilik Güncellemesi",
+      "items": [
+        "Güncelleme Notları tüm kullanıcılara açık kalmaya devam eder.",
+        "Ana Admin kullanıcı adı, herkese açık güncelleme notlarında anonimleştirildi.",
+        "Güncelleme notlarında Ana Admin'in gerçek kullanıcı adı yerine yalnızca Ana Admin ifadesi gösterilir."
+      ]
+    },
     {
       "version": "1.6.14",
       "date": "2026-08-12",
       "title": "Hesap Silme ve Güncelleme Notları",
       "items": [
         "Normal kullanıcılar ve normal adminler artık yan menüdeki Hesabımı Sil butonuyla kendi hesaplarını silebilir.",
-        "ovztur Ana Admin hesabı kendi kendine silinemez.",
+        "Ana Admin hesabı kendi kendine silinemez.",
         "Güncelleme Notları sekmesi eklendi.",
         "Yeni bir sürüm geldiğinde Güncelleme Notları sekmesi o sürüm için bir kez otomatik açılır.",
         "Eski tek seferlik yayın dosyaları ve bakım kalıntıları temizlendi."
