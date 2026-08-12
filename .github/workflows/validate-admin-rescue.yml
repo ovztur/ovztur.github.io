@@ -1,0 +1,26 @@
+name: Validate MCU Admin Rescue
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'app/telemetry.js'
+      - '.github/workflows/validate-admin-rescue.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check rescue JavaScript
+        run: node --check app/telemetry.js
+      - name: Verify v1.6.3 admin source
+        shell: bash
+        run: |
+          grep -F 'function isSuperAdmin(){return userKey(currentUser?.username||"")==="ovztur"}' app/index.html
+          grep -F 'adminBtn.classList.toggle("hidden",!isAdmin())' app/index.html
+          grep -F 'function renderAdminPanel()' app/index.html
+          grep -F '"version": "1.6.3"' app/latest.json
