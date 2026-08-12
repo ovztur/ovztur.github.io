@@ -8,7 +8,8 @@
       "items": [
         "IMDb puanlarının bazı cihazlarda 'puan henüz yüklenmedi' olarak kalmasına neden olan büyük veri dosyası indirme yöntemi değiştirildi.",
         "Uygulama artık yalnızca MCU başlıklarına ait küçük IMDb puan veri dosyasını yükler.",
-        "IMDb puan verileri otomatik olarak güncellenir ve uygulama içinde gösterilir."
+        "IMDb puan verileri otomatik olarak güncellenir ve uygulama içinde gösterilir.",
+        "Kişisel film puanlama alanı 10 yıldızlı sisteme dönüştürüldü; örneğin 9. yıldız seçildiğinde 1-9 arasındaki yıldızların tamamı işaretlenir ve puan 9/10 olarak kaydedilir."
       ]
     },
     {
