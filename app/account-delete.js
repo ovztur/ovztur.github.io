@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.7';
+  const VERSION='1.6.10';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
   const STATE_PREFIX='MCU_TRACKER_USER_STATE_V1_';
@@ -83,26 +83,6 @@
       };
       parent.appendChild(del);
     });
-
-    const nick=document.getElementById('mcuAdminNick'),grant=document.getElementById('mcuGrantNickBtn');
-    if(nick&&grant&&!document.getElementById('mcuDeleteNickBtn')){
-      const del=document.createElement('button');
-      del.id='mcuDeleteNickBtn';
-      del.className='secondary';
-      del.textContent='Hesabı Sil';
-      del.onclick=()=>{
-        const found=findByNick(nick.value);
-        if(!found){alert('Bu nick ile kayıtlı hesap bulunamadı.');return}
-        const [storedKey,target]=found;
-        if(primary(target)){alert('ovztur Ana Admin hesabı silinemez.');return}
-        const label='@'+(target.username||storedKey);
-        if(!confirmDelete(label))return;
-        const r=deleteStoredAccount(storedKey,'primary');
-        alert(r.msg);
-        document.getElementById('adminMenuBtn')?.click();
-      };
-      grant.insertAdjacentElement('afterend',del);
-    }
   }
 
   function refresh(){ensureSelfDelete();injectPrimaryAdminDeletes()}
