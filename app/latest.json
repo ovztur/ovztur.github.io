@@ -1,6 +1,6 @@
 {
-  "version": "1.5.2",
+  "version": "1.5.3",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "b5741f270700e3aaad0e586a05e8675ba2e07b0b52931268cdf605b7aa4504fb",
-  "notes": "Ana Admin ovztur + devredilebilir admin yetkileri + Admin Paneli sekmesi."
+  "sha256": "9d3b2c80135e5b250888ea8a29b113b3437efd317798e3f0dd2aa3d74f0c0c60",
+  "notes": "Admin Paneli içine canlı anonim giriş/çıkış/kayıt/açılış sayaçları bağlandı. Yeni EXE gerekmez."
 }
