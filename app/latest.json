@@ -1,6 +1,6 @@
 {
-  "version": "1.6.6",
+  "version": "1.6.7",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "9bd6039c7a71e3c7a123070961ac78911b2f4e64e648c8f0f1a47a2604338199",
-  "notes": "Admin Paneline nick yazarak doğrudan Admin yapma alanı eklendi. ovztur kalıcı Ana Admin olarak korunur."
+  "sha256": "91be78f58a6e43da70e3512fbb60dcce8a989bf73486a239ffe3c28a56a32af0",
+  "notes": "Normal kullanıcı erişimi açıldı. Giriş/Kayıt ekranı admin hesabı olmadan da kullanılabilir; Admin Paneli yalnızca adminlere görünür."
 }
