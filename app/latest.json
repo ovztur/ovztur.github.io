@@ -1,6 +1,6 @@
 {
-  "version": "1.6.9",
+  "version": "1.6.10",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "c36cab52ef9e7e5991412671f9140cff39d971b2a0ed4d116ed89d9ab9896bae",
-  "notes": "Nick ile Admin Yap ve Nick ile Hesap Sil araçları Admin Panelinde iki ayrı kutuya ayrıldı."
+  "sha256": "6842e89b8392264386ad1e1fd6244660ae69aa7e8fe9f4e3a7cb2138f16a7425",
+  "notes": "Nick ile Admin Yap kutusunda yalnız Admin Yap bırakıldı. Nick ile Hesap Sil ayrı kutu olarak tutuldu."
 }
