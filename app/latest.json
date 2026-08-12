@@ -1,6 +1,6 @@
 {
-  "version": "1.6.7",
+  "version": "1.6.8",
   "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "0f11445a0acfe1e0cda24c05cb0cf09d0f718c9496545a2d00d423fd2852a1dc",
-  "notes": "Hesap silme eklendi: normal kullanıcı kendi hesabını silebilir; ovztur Ana Admin kendisi hariç tüm yerel hesapları silebilir."
+  "sha256": "7004c4ab11c7477e01a35ec226872c51a926e5dcdd81930a353f4f506206981b",
+  "notes": "Hesap silme görünürlük düzeltmesi: silme kontrolleri Admin Panelinin kendi gövdesine entegre edildi ve script önbelleği yenilendi."
 }
