@@ -48,7 +48,7 @@ jobs:
           cat > app/latest.json <<EOF
           {
             "version": "1.5.1",
-            "url": "https://ovztur.github.io/app/index.html",
+            "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
             "sha256": "$SHA",
             "notes": "MCU Tracker uygulama içeriği + privacy-first anonim olay adaptörü. Hesap ve ilerleme verileri cihazda kalır."
           }
