@@ -1,0 +1,1 @@
+Legacy MCU Tracker versioned publishing workflows are being removed because they race each other and overwrite newer app/admin releases. Only bootstrap/updater build workflows should remain active.
