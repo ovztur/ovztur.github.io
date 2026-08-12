@@ -2,10 +2,6 @@ name: Build MCU Tracker Bootstrap
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'bootstrap/main.go'
-      - '.github/workflows/build-bootstrap.yml'
 
 permissions:
   contents: write
