@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='1.6.10';
+  const VERSION='1.6.11';
   const USERS_KEY='MCU_TRACKER_USERS_V1';
   const SESSION_KEY='MCU_TRACKER_SESSION_V1';
   const STATE_PREFIX='MCU_TRACKER_USER_STATE_V1_';
@@ -11,28 +11,21 @@
   const account=()=>{const users=readUsers(),key=sessionKey();return{users,key,user:users[key]||null}};
   const primary=u=>keyOf(u?.username||u?.key)==='ovztur';
 
-  function findByNick(nick){
-    const wanted=keyOf(nick),users=readUsers();
-    return Object.entries(users).find(([storedKey,u])=>keyOf(u?.username||u?.key||storedKey)===wanted)||null;
-  }
-
   function clearUserState(storedKey,user){
     const candidates=new Set([storedKey,user?.key,user?.username].filter(Boolean).map(String));
     for(const c of candidates)localStorage.removeItem(STATE_PREFIX+encodeURIComponent(c));
   }
 
-  function deleteStoredAccount(storedKey,actorMode){
+  function deleteStoredAccount(storedKey){
     const users=readUsers(),target=users[storedKey];
     if(!target)return{ok:false,msg:'Hesap bulunamadı.'};
     if(primary(target))return{ok:false,msg:'ovztur Ana Admin hesabı silinemez.'};
-    const actor=account().user;
-    const own=storedKey===sessionKey();
-    if(actorMode==='self'&&!own)return{ok:false,msg:'Yalnızca kendi hesabını silebilirsin.'};
-    if(actorMode==='primary'&&!primary(actor))return{ok:false,msg:'Diğer hesapları yalnızca ovztur Ana Admin silebilir.'};
+    if(storedKey!==sessionKey())return{ok:false,msg:'Yalnızca kendi hesabını silebilirsin.'};
     clearUserState(storedKey,target);
     delete users[storedKey];
     writeUsers(users);
-    if(own){localStorage.removeItem(SESSION_KEY);setTimeout(()=>location.reload(),50)}
+    localStorage.removeItem(SESSION_KEY);
+    setTimeout(()=>location.reload(),50);
     return{ok:true,msg:`@${target.username||storedKey} hesabı silindi.`};
   }
 
@@ -54,43 +47,17 @@
     btn.onclick=()=>{
       const label='@'+(user.username||key);
       if(!confirmDelete(label))return;
-      deleteStoredAccount(key,'self');
+      deleteStoredAccount(key);
     };
     box.appendChild(btn);
   }
 
-  function injectPrimaryAdminDeletes(){
-    const actor=account().user;
-    if(!primary(actor))return;
-
-    document.querySelectorAll('[data-admin-key]').forEach(roleBtn=>{
-      const storedKey=roleBtn.dataset.adminKey;
-      if(!storedKey||keyOf(storedKey)==='ovztur')return;
-      const parent=roleBtn.parentElement;
-      if(!parent||parent.querySelector(`[data-delete-account-key="${CSS.escape(storedKey)}"]`))return;
-      const del=document.createElement('button');
-      del.className='secondary';
-      del.dataset.deleteAccountKey=storedKey;
-      del.textContent='🗑️ Hesabı Sil';
-      del.style.marginLeft='8px';
-      del.onclick=()=>{
-        const target=readUsers()[storedKey];if(!target)return;
-        const label='@'+(target.username||storedKey);
-        if(!confirmDelete(label))return;
-        const r=deleteStoredAccount(storedKey,'primary');
-        alert(r.msg);
-        document.getElementById('adminMenuBtn')?.click();
-      };
-      parent.appendChild(del);
-    });
-  }
-
-  function refresh(){ensureSelfDelete();injectPrimaryAdminDeletes()}
   function install(){
-    refresh();
-    setTimeout(refresh,250);setTimeout(refresh,1000);
-    document.addEventListener('click',()=>setTimeout(refresh,0),true);
-    window.addEventListener('focus',refresh,{passive:true});
+    ensureSelfDelete();
+    setTimeout(ensureSelfDelete,250);
+    setTimeout(ensureSelfDelete,1000);
+    document.addEventListener('click',()=>setTimeout(ensureSelfDelete,0),true);
+    window.addEventListener('focus',ensureSelfDelete,{passive:true});
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
