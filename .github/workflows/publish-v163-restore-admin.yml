@@ -1,0 +1,88 @@
+name: Publish MCU Tracker v1.6.3 Admin Restore
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/publish-v163-restore-admin.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore proven local admin app body
+        shell: bash
+        run: |
+          git show 52e93399283fb9f47322a6c97fd12fc18dca501f:app/index.html > app/index.html
+
+      - name: Promote restored app to v1.6.3
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app/index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('const MCU_APP_VERSION="1.5.3";','const MCU_APP_VERSION="1.6.3";')
+          s=s.replace('MCU_TELEMETRY_OPEN_153','MCU_TELEMETRY_OPEN_163')
+          s=s.replace('<script src="https://ovztur.github.io/app/telemetry.js?v=1.5.1"></script>','')
+          # Hard assertions: never publish if the primary-admin code is missing.
+          required=[
+            'function isSuperAdmin(){return userKey(currentUser?.username||"")==="ovztur"}',
+            'function isAdmin(){return isSuperAdmin()||currentUser?.role==="admin"}',
+            'adminBtn.classList.toggle("hidden",!isAdmin())',
+            'function renderAdminPanel()',
+            '🛡️ Ana Admin'
+          ]
+          missing=[x for x in required if x not in s]
+          if missing:
+            raise SystemExit('Admin restore assertion failed: '+repr(missing))
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Validate JavaScript
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re,subprocess,sys
+          s=Path('app/index.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          for i,b in enumerate(blocks):
+              if not b.strip(): continue
+              f=Path(f'/tmp/mcu-v163-{i}.js'); f.write_text(b,encoding='utf-8')
+              r=subprocess.run(['node','--check',str(f)],capture_output=True,text=True)
+              if r.returncode:
+                  print(r.stderr); sys.exit(r.returncode)
+          PY
+
+      - name: Generate v1.6.3 manifest
+        shell: bash
+        run: |
+          SHA=$(sha256sum app/index.html | awk '{print $1}')
+          cat > app/latest.json <<EOF
+          {
+            "version": "1.6.3",
+            "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
+            "sha256": "$SHA",
+            "notes": "Admin restore: ovztur kalıcı Ana Admin, Admin Paneli geri yüklendi, canlı anonim sayaçlar uygulama içinde."
+          }
+          EOF
+          printf '%s  %s\n' "$SHA" 'index.html' > app/index.sha256
+
+      - name: Publish v1.6.3
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/index.html app/latest.json app/index.sha256
+          git diff --cached --quiet && exit 0
+          git commit -m 'Publish MCU Tracker v1.6.3 admin restore'
+          git pull --rebase origin main
+          git push origin main
