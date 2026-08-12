@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'app/payload.*'
+      - 'app/telemetry.js'
       - '.github/workflows/publish-app.yml'
 
 permissions:
@@ -26,6 +27,18 @@ jobs:
           xz -dc /tmp/mcu-app.xz > app/index.html
           test -s app/index.html
           grep -q '<!DOCTYPE html' app/index.html || grep -q '<!doctype html' app/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('app/index.html')
+          s=p.read_text(encoding='utf-8')
+          tag='<script src="https://ovztur.github.io/app/telemetry.js?v=1.5.1"></script>'
+          if tag not in s:
+              if '</body>' in s:
+                  s=s.replace('</body>',tag+'</body>',1)
+              else:
+                  s+=tag
+          p.write_text(s,encoding='utf-8')
+          PY
 
       - name: Generate app manifest
         shell: bash
@@ -34,10 +47,10 @@ jobs:
           SHA=$(sha256sum app/index.html | awk '{print $1}')
           cat > app/latest.json <<EOF
           {
-            "version": "1.5.0",
+            "version": "1.5.1",
             "url": "https://ovztur.github.io/app/index.html",
             "sha256": "$SHA",
-            "notes": "MCU Tracker v1.5.0 uygulama içeriği. Hesap ve ilerleme verileri cihazda kalır."
+            "notes": "MCU Tracker uygulama içeriği + privacy-first anonim olay adaptörü. Hesap ve ilerleme verileri cihazda kalır."
           }
           EOF
           printf '%s  %s\n' "$SHA" 'index.html' > app/index.sha256
@@ -49,5 +62,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add app/index.html app/latest.json app/index.sha256
           git diff --cached --quiet && exit 0
-          git commit -m 'Publish MCU Tracker v1.5.0 app content'
+          git commit -m 'Publish MCU Tracker v1.5.1 app content'
           git push
