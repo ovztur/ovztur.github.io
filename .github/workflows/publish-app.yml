@@ -1,0 +1,53 @@
+name: Publish MCU Tracker App Content
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'app/payload.*'
+      - '.github/workflows/publish-app.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rebuild app HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat app/payload.* > /tmp/mcu-app.xz.b64
+          base64 -d /tmp/mcu-app.xz.b64 > /tmp/mcu-app.xz
+          xz -dc /tmp/mcu-app.xz > app/index.html
+          test -s app/index.html
+          grep -q '<!DOCTYPE html' app/index.html || grep -q '<!doctype html' app/index.html
+
+      - name: Generate app manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA=$(sha256sum app/index.html | awk '{print $1}')
+          cat > app/latest.json <<EOF
+          {
+            "version": "1.5.0",
+            "url": "https://ovztur.github.io/app/index.html",
+            "sha256": "$SHA",
+            "notes": "MCU Tracker v1.5.0 uygulama içeriği. Hesap ve ilerleme verileri cihazda kalır."
+          }
+          EOF
+          printf '%s  %s\n' "$SHA" 'index.html' > app/index.sha256
+
+      - name: Publish rebuilt app
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/index.html app/latest.json app/index.sha256
+          git diff --cached --quiet && exit 0
+          git commit -m 'Publish MCU Tracker v1.5.0 app content'
+          git push
