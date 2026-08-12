@@ -1,6 +1,16 @@
 {
-  "latest": "1.6.16",
+  "latest": "1.6.17",
   "entries": [
+    {
+      "version": "1.6.17",
+      "date": "2026-08-13",
+      "title": "IMDb Puan Yükleme Düzeltmesi",
+      "items": [
+        "IMDb puanlarının bazı cihazlarda 'puan henüz yüklenmedi' olarak kalmasına neden olan büyük veri dosyası indirme yöntemi değiştirildi.",
+        "Uygulama artık yalnızca MCU başlıklarına ait küçük IMDb puan veri dosyasını yükler.",
+        "IMDb puan verileri otomatik olarak güncellenir ve uygulama içinde gösterilir."
+      ]
+    },
     {
       "version": "1.6.16",
       "date": "2026-08-13",
