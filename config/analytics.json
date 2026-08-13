@@ -1,9 +1,0 @@
-{
-  "enabled": true,
-  "event_url": "https://svnrfyqloiludzvnylyp.supabase.co/functions/v1/mcu-telemetry",
-  "stats_url": "https://svnrfyqloiludzvnylyp.supabase.co/functions/v1/mcu-telemetry",
-  "privacy": {
-    "personal_data": false,
-    "fields_sent": ["event","version","count"]
-  }
-}

@@ -1,6 +1,0 @@
-{
-  "version": "1.6.17",
-  "url": "https://raw.githubusercontent.com/ovztur/ovztur.github.io/main/app/index.html",
-  "sha256": "b11e6bf28e6601649bc3764cf7a23a3c49bb625b3dcf26ed33cf97985748b677",
-  "notes": "IMDb puan yükleme düzeltmesine ek olarak kişisel film puanlama alanı 10 yıldızlı sisteme dönüştürüldü. Seçilen yıldıza kadar tüm yıldızlar işaretlenir."
-}
