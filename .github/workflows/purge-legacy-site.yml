@@ -1,0 +1,31 @@
+name: Purge legacy MCU Tracker site
+
+on:
+  push:
+    paths:
+      - '.github/workflows/purge-legacy-site.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  purge:
+    if: github.event.head_commit.message == 'Purge legacy MCU Tracker repository content'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove all legacy site content
+        run: |
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '.github' -exec rm -rf {} +
+          find .github -mindepth 1 -maxdepth 1 ! -name 'workflows' -exec rm -rf {} +
+          find .github/workflows -mindepth 1 -maxdepth 1 ! -name 'purge-legacy-site.yml' -exec rm -rf {} +
+          rm -f .github/workflows/purge-legacy-site.yml
+      - name: Commit purge
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Remove legacy MCU Tracker site content'
+          git push origin main
